@@ -84,7 +84,6 @@ export const forceDisconnectFromMetaMask = async (): Promise<boolean> => {
   }
 
   try {
-    // Method 1: Try to revoke permissions (most reliable)
     try {
       await window.ethereum!.request({
         method: 'wallet_revokePermissions',
@@ -96,7 +95,6 @@ export const forceDisconnectFromMetaMask = async (): Promise<boolean> => {
       console.log('wallet_revokePermissions not supported, trying alternative methods');
     }
 
-    // Method 2: Try to clear permissions by requesting empty array
     try {
       await window.ethereum!.request({
         method: 'wallet_requestPermissions',
@@ -108,19 +106,16 @@ export const forceDisconnectFromMetaMask = async (): Promise<boolean> => {
       console.log('wallet_requestPermissions with empty params not supported');
     }
 
-    // Method 3: Try to disconnect by requesting accounts and ignoring result
     try {
       await window.ethereum!.request({
         method: 'eth_requestAccounts'
       });
-      // Don't store the result - this forces a fresh connection next time
       console.log('Forced fresh connection state');
       return true;
     } catch {
       console.log('eth_requestAccounts failed during disconnect');
     }
 
-    // Method 4: Clear event listeners as fallback
     if (window.ethereum && 'removeAllListeners' in window.ethereum) {
       (window.ethereum as any).removeAllListeners();
       console.log('Cleared MetaMask event listeners');
@@ -128,7 +123,7 @@ export const forceDisconnectFromMetaMask = async (): Promise<boolean> => {
     }
 
     console.log('All disconnect methods failed, but local state will be cleared');
-    return false; // Some methods failed but we'll still clear local state
+    return false;
   } catch (error) {
     console.error('Error during MetaMask disconnect:', error);
     return false;
